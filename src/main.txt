@@ -1,0 +1,125 @@
+#include <WiFi.h>
+
+// Nome do SSID (nome da rede Wi-Fi) e senha do Access Point
+const char* ssid = "ESP32";
+const char* password = "escotilha327";
+
+// Configura o servidor web na porta 80
+WiFiServer server(80);
+
+// Variável para armazenar a requisição HTTP
+String header;
+
+// Variáveis para armazenar o estado atual dos GPIOs
+String output26State = "off";
+String output27State = "off";
+
+// Definir os pinos GPIO
+const int output26 = 26;
+const int output27 = 27;
+
+void setup() {
+  Serial.begin(9600);  // Iniciar monitor serial
+
+  // Configurar os pinos como saída
+  pinMode(output26, OUTPUT);
+  pinMode(output27, OUTPUT);
+  digitalWrite(output26, LOW);  // Inicialmente desligado
+  digitalWrite(output27, LOW);  // Inicialmente desligado
+
+  // Configurar o ESP32 como Access Point
+  Serial.println("Configurando Access Point...");
+  WiFi.softAP(ssid, password);  // Configurar rede Wi-Fi com SSID e senha
+  
+  // Imprimir o endereço IP do Access Point 
+  Serial.println("Access Point configurado.");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.softAPIP());  // Exibe o IP da placa
+
+  // Iniciar o servidor
+  server.begin();
+}
+
+void loop() {
+  WiFiClient client = server.available();  // Aguarda conexões de clientes
+
+  if (client) {                             // Se um cliente se conectar
+    Serial.println("Novo cliente conectado.");
+    String currentLine = "";                // Armazena dados recebidos do cliente
+    unsigned long currentTime = millis();   // Tempo atual
+    unsigned long previousTime = currentTime; // Tempo anterior
+    const long timeoutTime = 2000000;          // Tempo limite para desconexão
+
+    while (client.connected() && (currentTime - previousTime <= timeoutTime)) {  // Enquanto o cliente estiver conectado
+      if (client.available()) {             // Se há dados a serem lidos
+        char c = client.read();             // Ler um byte
+        Serial.write(c);                    // Imprimir o byte no monitor serial
+        header += c;                        // Armazenar na string header
+        if (c == '\n') {                    // Se a linha estiver vazia, significa que terminou a requisição
+          if (currentLine.length() == 0) {
+            // Enviar resposta HTTP ao cliente
+            client.println("HTTP/1.1 200 OK");
+            client.println("Content-type:text/html");
+            client.println("Connection: close");
+            client.println();
+            
+            // Controle dos GPIOs via requisição HTTP
+            if (header.indexOf("GET /26/on") >= 0) {
+              Serial.println("GPIO 26 ligado");
+              output26State = "on";
+              digitalWrite(output26, HIGH);
+            } else if (header.indexOf("GET /26/off") >= 0) {
+              Serial.println("GPIO 26 desligado");
+              output26State = "off";
+              digitalWrite(output26, LOW);
+            } else if (header.indexOf("GET /27/on") >= 0) {
+              Serial.println("GPIO 27 ligado");
+              output27State = "on";
+              digitalWrite(output27, HIGH);
+            } else if (header.indexOf("GET /27/off") >= 0) {
+              Serial.println("GPIO 27 desligado");
+              output27State = "off";
+              digitalWrite(output27, LOW);
+            }
+            
+            // Exibir a página HTML com botões de controle
+            client.println("<!DOCTYPE html><html>");
+            client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+            client.println("<link rel=\"icon\" href=\"data:,\">");
+            client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;} .button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px; text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;} .button2 {background-color: #555555;}</style></head>");
+            
+            client.println("<body><h1>ESP32 Access Point Web Server</h1>");
+            
+            // Exibir o estado do GPIO 26 e os botões de controle
+            client.println("<p>GPIO 26 - Estado " + output26State + "</p>");
+            if (output26State=="off") {
+              client.println("<p><a href=\"/26/on\"><button class=\"button\">ON</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/26/off\"><button class=\"button button2\">OFF</button></a></p>");
+            }
+            
+            // Exibir o estado do GPIO 27 e os botões de controle
+            client.println("<p>GPIO 27 - Estado " + output27State + "</p>");
+            if (output27State=="off") {
+              client.println("<p><a href=\"/27/on\"><button class=\"button\">ON</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/27/off\"><button class=\"button button2\">OFF</button></a></p>");
+            }
+            
+            client.println("</body></html>");
+            client.println();
+            break;
+          } else { 
+            currentLine = "";
+          }
+        } else if (c != '\r') {  
+          currentLine += c;      
+        }
+      }
+      currentTime = millis(); // Atualiza o tempo atual dentro do loop
+    }
+    header = "";  
+    client.stop();
+    Serial.println("Cliente desconectado.");
+  }
+}

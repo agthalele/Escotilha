@@ -1,0 +1,22 @@
+#include <WiFi.h>  // Biblioteca Wi-Fi para o ESP32
+
+// Definição do nome da rede (SSID) e senha do ponto de acesso (AP)
+const char* ssid = "Wifi ESP32";
+const char* password = "escotilha327";
+
+void setup() {
+  Serial.begin(9600);  // Inicializa a comunicação serial para depuração
+// Configura o ESP32 como ponto de acesso (Access Point)
+  WiFi.softAP(ssid, password);
+
+// Exibe no monitor serial o IP do ESP32 como AP
+  Serial.print("Access Point criado. IP address: ");
+
+  Serial.println(WiFi.softAPIP());  // Mostra o IP do ponto de acesso
+}
+
+void loop() {
+  }
+
+
+
