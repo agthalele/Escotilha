@@ -13,8 +13,8 @@ Servo myservo;  // create servo object to control a servo
 static const int servoPin = 13;
 
 // Replace with your network credentials
-const char* ssid     = "ESP32";
-const char* password = "escotilha327";
+const char* ssid     = "REPLACE_WITH_YOUR_SSID";
+const char* password = "REPLACE_WITH_YOUR_PASSWORD";
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -35,11 +35,10 @@ unsigned long previousTime = 0;
 const long timeoutTime = 2000;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   myservo.attach(servoPin);  // attaches the servo on the servoPin to the servo object
 
-  /*
   // Connect to Wi-Fi network with SSID and password
   Serial.print("Connecting to ");
   Serial.println(ssid);
@@ -53,15 +52,8 @@ void setup() {
   Serial.println("WiFi connected.");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
-  */
-  Serial.println("Configurando ponto de acesso...");
-  WiFi.softAP(ssid, password);
-  IPAddress IP = WiFi.softAPIP();
-  Serial.print("IP do ponto de acesso: ");
-  Serial.println(IP);
   server.begin();
 }
-  
 
 void loop(){
   WiFiClient client = server.available();   // Listen for incoming clients
