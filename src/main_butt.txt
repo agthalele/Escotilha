@@ -1,4 +1,11 @@
 #include <WiFi.h>
+#include <ESP32Servo.h>
+
+Servo myservo;  // create servo object to control a servo
+// twelve servo objects can be created on most boards
+
+// GPIO the servo is attached to
+static const int servoPin = 13;
 
 // Nome do SSID (nome da rede Wi-Fi) e senha do Access Point
 const char* ssid = "ESP32";
@@ -15,8 +22,10 @@ String output26State = "off";
 String output27State = "off";
 
 // Definir os pinos GPIO
-const int output26 = 26;
-const int output27 = 27;
+const int output26 = 13;
+const int output27 = 13;
+
+int rote = 5;
 
 void setup() {
   Serial.begin(9600);  // Iniciar monitor serial
@@ -68,18 +77,34 @@ void loop() {
               Serial.println("GPIO 26 ligado");
               output26State = "on";
               digitalWrite(output26, HIGH);
-            } else if (header.indexOf("GET /26/off") >= 0) {
+              rote+=10;
+              //Rotate the servo
+              myservo.write(rote);
+
+            } 
+            else if (header.indexOf("GET /26/off") >= 0) {
               Serial.println("GPIO 26 desligado");
               output26State = "off";
               digitalWrite(output26, LOW);
-            } else if (header.indexOf("GET /27/on") >= 0) {
+              rote+=10;
+              //Rotate the servo
+              myservo.write(rote);
+            } 
+            else if (header.indexOf("GET /27/on") >= 0) {
               Serial.println("GPIO 27 ligado");
               output27State = "on";
               digitalWrite(output27, HIGH);
-            } else if (header.indexOf("GET /27/off") >= 0) {
+              rote-=10;
+              //Rotate the servo
+              myservo.write(rote);
+            } 
+            else if (header.indexOf("GET /27/off") >= 0) {
               Serial.println("GPIO 27 desligado");
               output27State = "off";
               digitalWrite(output27, LOW);
+              rote-=10;
+              //Rotate the servo
+              myservo.write(rote);
             }
             
             // Exibir a página HTML com botões de controle
