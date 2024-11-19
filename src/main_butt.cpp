@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <ESP32Servo.h>
 
+
 Servo myservo;  // create servo object to control a servo
 // twelve servo objects can be created on most boards
 
@@ -45,6 +46,8 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.softAPIP());  // Exibe o IP da placa
 
+  myservo.attach(servoPin);
+
   // Iniciar o servidor
   server.begin();
 }
@@ -77,7 +80,9 @@ void loop() {
               Serial.println("GPIO 26 ligado");
               output26State = "on";
               digitalWrite(output26, HIGH);
-              rote+=10;
+              rote+=5;
+              //nao mostra o valor de rote !! erro: calibration version failed(0x%x)
+              Serial.println("\n" + rote);
               //Rotate the servo
               myservo.write(rote);
 
@@ -86,7 +91,9 @@ void loop() {
               Serial.println("GPIO 26 desligado");
               output26State = "off";
               digitalWrite(output26, LOW);
-              rote+=10;
+              rote+=5;
+              
+              Serial.println("\n" + rote);
               //Rotate the servo
               myservo.write(rote);
             } 
@@ -94,7 +101,9 @@ void loop() {
               Serial.println("GPIO 27 ligado");
               output27State = "on";
               digitalWrite(output27, HIGH);
-              rote-=10;
+              rote-=5;
+              
+              Serial.println("\n"+rote);
               //Rotate the servo
               myservo.write(rote);
             } 
@@ -102,7 +111,9 @@ void loop() {
               Serial.println("GPIO 27 desligado");
               output27State = "off";
               digitalWrite(output27, LOW);
-              rote-=10;
+              rote-=5;
+              
+              Serial.println("\n" + rote);
               //Rotate the servo
               myservo.write(rote);
             }
