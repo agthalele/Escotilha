@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <ESP32Servo.h>
+#include "site.h"
 
 
 Servo myservo;  // create servo object to control a servo
@@ -26,7 +27,7 @@ String output27State = "off";
 const int output26 = 13;
 const int output27 = 13;
 
-int rote = 5;
+int rote = 180;
 
 void setup() {
   Serial.begin(9600);  // Iniciar monitor serial
@@ -47,6 +48,7 @@ void setup() {
   Serial.println(WiFi.softAPIP());  // Exibe o IP da placa
 
   myservo.attach(servoPin);
+  myservo.write(180);
 
   // Iniciar o servidor
   server.begin();
@@ -77,69 +79,33 @@ void loop() {
             
             // Controle dos GPIOs via requisição HTTP
             if (header.indexOf("GET /26/on") >= 0) {
-              Serial.println("GPIO 26 ligado");
-              output26State = "on";
-              digitalWrite(output26, HIGH);
-              rote+=5;
-              //nao mostra o valor de rote !! erro: calibration version failed(0x%x)
-              Serial.println("\n" + rote);
-              //Rotate the servo
-              myservo.write(rote);
-
+              Serial.println("ABRIR");
+              output26State = "on";  
+              myservo.write(0);
             } 
             else if (header.indexOf("GET /26/off") >= 0) {
-              Serial.println("GPIO 26 desligado");
+              Serial.println("FECHAR");
               output26State = "off";
-              digitalWrite(output26, LOW);
-              rote+=5;
-              
-              Serial.println("\n" + rote);
-              //Rotate the servo
-              myservo.write(rote);
+              myservo.write(180);
             } 
-            else if (header.indexOf("GET /27/on") >= 0) {
-              Serial.println("GPIO 27 ligado");
-              output27State = "on";
-              digitalWrite(output27, HIGH);
-              rote-=5;
-              
-              Serial.println("\n"+rote);
-              //Rotate the servo
-              myservo.write(rote);
-            } 
-            else if (header.indexOf("GET /27/off") >= 0) {
-              Serial.println("GPIO 27 desligado");
-              output27State = "off";
-              digitalWrite(output27, LOW);
-              rote-=5;
-              
-              Serial.println("\n" + rote);
-              //Rotate the servo
-              myservo.write(rote);
-            }
-            
+             
             // Exibir a página HTML com botões de controle
-            client.println("<!DOCTYPE html><html>");
-            client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-            client.println("<link rel=\"icon\" href=\"data:,\">");
-            client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;} .button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px; text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;} .button2 {background-color: #555555;}</style></head>");
+            client.println(html);
+            //client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+            //client.println("<link rel=\"icon\" href=\"data:,\">");
+            //client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;} .button { background-color: black; border: none; color: white; padding: 16px 40px; text-decoration: none; font-size: 64px; margin: 10px; cursor: pointer;} .button2 {background-color: #555555;}</style></head>");
             
-            client.println("<body><h1>ESP32 Access Point Web Server</h1>");
+            //client.println("<body><h5>ESP32 Access Point Web Server</h5>");
             
             // Exibir o estado do GPIO 26 e os botões de controle
-            client.println("<p>GPIO 26 - Estado " + output26State + "</p>");
             if (output26State=="off") {
-              client.println("<p><a href=\"/26/on\"><button class=\"button\">ON</button></a></p>");
+              Serial.println(img1);
+              client.println(img1);
+              client.println("<p><a href=\"/26/on\"><button class=\"button1\">ABRIR</button></a></p>");
             } else {
-              client.println("<p><a href=\"/26/off\"><button class=\"button button2\">OFF</button></a></p>");
-            }
-            
-            // Exibir o estado do GPIO 27 e os botões de controle
-            client.println("<p>GPIO 27 - Estado " + output27State + "</p>");
-            if (output27State=="off") {
-              client.println("<p><a href=\"/27/on\"><button class=\"button\">ON</button></a></p>");
-            } else {
-              client.println("<p><a href=\"/27/off\"><button class=\"button button2\">OFF</button></a></p>");
+              Serial.println(img2);
+              client.println(img2);
+              client.println("<p><a href=\"/26/off\"><button class=\"button2\">FECHAR</button></a></p>");
             }
             
             client.println("</body></html>");
